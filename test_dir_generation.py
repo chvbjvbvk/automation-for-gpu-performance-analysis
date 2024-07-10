@@ -29,7 +29,7 @@ def generate_test_directory(source_dir, test_dir):
         else:
             print(f"Warning: {filename} not found in {source_dir}.")
 
-def main(trace_files, work_area, test_dir):
+def main(trace_files, work_area, base_test_dir):
     try:
         traces = load_traces(trace_files)
         
@@ -41,17 +41,23 @@ def main(trace_files, work_area, test_dir):
                 try:
                     future.result()  # Ensure no exceptions were raised
                     print(f"Replay completed for trace: {trace}")
+                    
+                    # Create a unique test directory for each trace
+                    trace_name = os.path.basename(trace).split('.')[0]
+                    test_dir = os.path.join(base_test_dir, f"test_dir_{trace_name}")
+                    
+                    capture_intents(work_area)
+                    generate_test_directory(work_area, test_dir)
+                    print(f"Test directory generated successfully at {test_dir}")
+                    
                 except Exception as e:
                     print(f"An error occurred during replay of {trace}: {e}")
         
-        capture_intents(work_area)
-        generate_test_directory(work_area, test_dir)
-        print(f"Test directory generated successfully at {test_dir}")
     except Exception as e:
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     trace_files = ['path/to/trace1.aql', 'path/to/trace2.pm4']  # Update with actual trace file paths
     work_area = 'path/to/work_area'  # Update with the actual work area path
-    test_dir = 'path/to/test_dir'  # Update with the actual test directory path
-    main(trace_files, work_area, test_dir)
+    base_test_dir = 'path/to/base_test_dir'  # Update with the base path where test directories will be created
+    main(trace_files, work_area, base_test_dir)
